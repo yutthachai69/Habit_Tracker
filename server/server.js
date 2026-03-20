@@ -10,7 +10,11 @@ connectDB()
 
 // Middleware
 app.use(cors({
-  origin: ['http://localhost:5173', 'http://localhost:5174'],
+  origin: [
+    'http://localhost:5173', 
+    'http://localhost:5174', 
+    'https://habit-tracker-eta-gold.vercel.app'
+  ],
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH'],
   credentials: true,
 }))
