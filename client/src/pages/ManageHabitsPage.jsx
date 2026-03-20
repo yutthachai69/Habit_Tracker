@@ -1,12 +1,25 @@
 import { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { getHabits, deleteHabit } from '../api'
+import ConfirmModal from '../components/ConfirmModal'
+import Toast from '../components/Toast'
 
 export default function ManageHabitsPage() {
   const navigate = useNavigate()
   const [habits, setHabits] = useState([])
   const [loading, setLoading] = useState(true)
   const [deletingId, setDeletingId] = useState(null)
+  
+  // Modal & Toast State
+  const [showConfirm, setShowConfirm] = useState(false)
+  const [targetId, setTargetId] = useState(null)
+  const [toast, setToast] = useState({ show: false, title: '', message: '', type: 'info' })
+
+  const showToast = (title, message, type = 'info') => {
+    setToast({ show: true, title, message, type })
+    setTimeout(() => setToast(prev => ({ ...prev, show: false })), 4000)
+  }
+
 
   useEffect(() => {
     fetchHabits()
@@ -23,20 +36,26 @@ export default function ManageHabitsPage() {
     }
   }
 
-  const handleDelete = async (id) => {
-    if (!window.confirm('คุณแน่ใจหรือไม่ว่าต้องการลบนิสัยนี้? ข้อมูลประวัติทั้งหมดจะถูกลบไปด้วย')) {
-      return
-    }
+  const handleDeleteClick = (id) => {
+    setTargetId(id)
+    setShowConfirm(true)
+  }
 
+  const handleConfirmDelete = async () => {
+    if (!targetId) return
+    const id = targetId
+    setShowConfirm(false)
     setDeletingId(id)
     try {
       await deleteHabit(id)
       setHabits(habits.filter((h) => h._id !== id))
+      showToast('ลบสำเร็จ', 'ลบนิสัยเรียบร้อยแล้ว', 'success')
     } catch (err) {
       console.error('Failed to delete habit:', err)
-      alert('ไม่สามารถลบได้ กรุณาลองใหม่อีกครั้ง')
+      showToast('เกิดข้อผิดพลาด', 'ไม่สามารถลบได้ กรุณาลองใหม่อีกครั้ง', 'error')
     } finally {
       setDeletingId(null)
+      setTargetId(null)
     }
   }
 
@@ -96,7 +115,7 @@ export default function ManageHabitsPage() {
                 </div>
 
                 <button
-                  onClick={() => handleDelete(habit._id)}
+                  onClick={() => handleDeleteClick(habit._id)}
                   disabled={deletingId === habit._id}
                   className="w-10 h-10 rounded-full flex items-center justify-center text-error hover:bg-error-container/80 transition-colors disabled:opacity-50"
                   aria-label="Delete habit"
@@ -112,6 +131,25 @@ export default function ManageHabitsPage() {
           </div>
         )}
       </main>
+
+      <ConfirmModal
+        show={showConfirm}
+        title="ลบนิสัยนี้?"
+        message="คุณแน่ใจหรือไม่ว่าต้องการลบนิสัยนี้? ข้อมูลประวัติทั้งหมดจะถูกลบไปด้วยและไม่สามารถกู้คืนได้"
+        confirmText="ใช่, ลบเลย"
+        cancelText="ยกเลิก"
+        type="danger"
+        onConfirm={handleConfirmDelete}
+        onCancel={() => setShowConfirm(false)}
+      />
+
+      <Toast
+        show={toast.show}
+        title={toast.title}
+        message={toast.message}
+        type={toast.type}
+        onClose={() => setToast({ ...toast, show: false })}
+      />
     </div>
   )
 }

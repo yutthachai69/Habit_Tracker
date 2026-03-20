@@ -53,8 +53,15 @@ router.get('/google/callback', async (req, res) => {
     // เซฟ token ลงไฟล์
     fs.writeFileSync(TOKEN_PATH, JSON.stringify(tokens))
     
-    // ส่งกลับไปหน้าตั้งค่าของแอป React
-    res.redirect('http://localhost:5173/settings')
+    // DEBUG: เช็คว่าตัวแปรอ่านมาได้ไหม
+    console.log('--- DEBUG AUTH CALLBACK ---')
+    console.log('FRONTEND_URL from env:', process.env.FRONTEND_URL)
+    
+    // ส่งกลับไปหน้าตั้งค่าของแอป React (ใช้ FRONTEND_URL ถ้ามี หรือ fallback ไปที่ localhost)
+    const frontendUrl = process.env.FRONTEND_URL?.trim() || 'http://localhost:5173'
+    console.log('Redirecting to:', `${frontendUrl}/settings`)
+    
+    res.redirect(`${frontendUrl}/settings`)
   } catch (error) {
     console.error('Error retrieving access token', error)
     res.status(500).send('Authentication failed')

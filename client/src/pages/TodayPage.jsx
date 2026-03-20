@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom'
 import TopAppBar from '../components/TopAppBar'
 import BottomNavBar from '../components/BottomNavBar'
 import { getLogsForDate, toggleLog } from '../api'
+import Toast from '../components/Toast'
 
 export default function TodayPage() {
   const navigate = useNavigate()
@@ -12,8 +13,6 @@ export default function TodayPage() {
   
   // XP & Level State
   const [xpData, setXpData] = useState({ level: 1, progressPct: 0, totalXP: 0 })
-  
-  // Custom Toast state
   
   // Custom Toast state
   const [toast, setToast] = useState({ show: false, title: '', message: '', type: 'info' })
@@ -113,27 +112,14 @@ export default function TodayPage() {
     <div className="bg-surface text-on-surface min-h-screen pb-32 relative">
       <TopAppBar title="วันนี้" />
 
-      {/* Custom Toast Notification */}
-      <div className={`fixed top-4 left-1/2 -translate-x-1/2 z-[100] transition-all duration-500 ease-out flex w-[90%] max-w-md ${toast.show ? 'translate-y-0 opacity-100' : '-translate-y-24 opacity-0 pointer-events-none'}`}>
-        <div className={`w-full p-4 rounded-[24px] shadow-2xl flex items-start gap-4 backdrop-blur-xl ${
-          toast.type === 'success' ? 'bg-primary-container/95 text-on-primary-container border border-primary/20' :
-          toast.type === 'error' ? 'bg-error-container/95 text-error border border-error/20' :
-          'bg-secondary-container/95 text-on-secondary-container border border-secondary/20'
-        }`}>
-          <div className="pt-0.5">
-            <span className="material-symbols-outlined text-[28px]" style={{ fontVariationSettings: "'FILL' 1" }}>
-              {toast.type === 'success' ? 'check_circle' : toast.type === 'error' ? 'error' : 'info'}
-            </span>
-          </div>
-          <div className="flex-1">
-            <h4 className="font-headline font-bold text-base leading-tight">{toast.title}</h4>
-            <p className="font-label text-sm mt-1 opacity-90 leading-snug">{toast.message}</p>
-          </div>
-          <button onClick={() => setToast({ ...toast, show: false })} className="opacity-50 hover:opacity-100 transition-opacity p-1">
-            <span className="material-symbols-outlined text-lg">close</span>
-          </button>
-        </div>
-      </div>
+      {/* Reusable Toast Notification */}
+      <Toast 
+        show={toast.show}
+        title={toast.title}
+        message={toast.message}
+        type={toast.type}
+        onClose={() => setToast({ ...toast, show: false })}
+      />
 
       <main className="px-6 py-4 space-y-10">
         {/* Life Level - Gamification Badge */}

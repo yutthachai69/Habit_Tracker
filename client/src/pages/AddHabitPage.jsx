@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import BottomNavBar from '../components/BottomNavBar'
 import { createHabit } from '../api'
+import Toast from '../components/Toast'
 
 const frequencies = [
   { id: 'everyday', label: 'ทุกวัน', icon: 'check_circle' },
@@ -27,6 +28,14 @@ export default function AddHabitPage() {
   const [goal, setGoal] = useState(1)
   const [reminders, setReminders] = useState(['08:00'])
   const [loading, setLoading] = useState(false)
+  
+  // Toast State
+  const [toast, setToast] = useState({ show: false, title: '', message: '', type: 'info' })
+  const showToast = (title, message, type = 'info') => {
+    setToast({ show: true, title, message, type })
+    setTimeout(() => setToast(prev => ({ ...prev, show: false })), 4000)
+  }
+
 
   const [isGoogleConnected, setIsGoogleConnected] = useState(false)
   const [isSynced, setIsSynced] = useState(false)
@@ -47,11 +56,12 @@ export default function AddHabitPage() {
     let finalFrequency = frequency
     if (frequency === 'custom') {
       if (customDays.length === 0) {
-        alert('กรุณาเลือกวันที่ต้องการทำอย่างน้อย 1 วัน')
+        showToast('ข้อมูลไม่ครบ', 'กรุณาเลือกวันที่ต้องการทำอย่างน้อย 1 วัน', 'error')
         return
       }
       finalFrequency = customDays.sort((a,b)=>a-b).join(',')
     }
+
 
     setLoading(true)
     try {
@@ -68,8 +78,9 @@ export default function AddHabitPage() {
       navigate('/')
     } catch (err) {
       console.error('Failed to create habit:', err)
-      alert(err.message || 'Error creating habit')
+      showToast('เกิดข้อผิดพลาด', err.message || 'Error creating habit', 'error')
     } finally {
+
       setLoading(false)
     }
   }
@@ -328,6 +339,15 @@ export default function AddHabitPage() {
       </main>
 
       <BottomNavBar />
+
+      <Toast
+        show={toast.show}
+        title={toast.title}
+        message={toast.message}
+        type={toast.type}
+        onClose={() => setToast({ ...toast, show: false })}
+      />
     </div>
   )
 }
+

@@ -1,7 +1,9 @@
-import TopAppBar from '../components/TopAppBar'
-import BottomNavBar from '../components/BottomNavBar'
 import { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
+import TopAppBar from '../components/TopAppBar'
+import BottomNavBar from '../components/BottomNavBar'
+import ConfirmModal from '../components/ConfirmModal'
+import Toast from '../components/Toast'
 
 const settingSections = [
   {
@@ -89,6 +91,16 @@ export default function SettingsPage() {
   const navigate = useNavigate()
   const [isGoogleConnected, setIsGoogleConnected] = useState(false)
 
+  // Modal & Toast State
+  const [showConfirm, setShowConfirm] = useState(false)
+  const [toast, setToast] = useState({ show: false, title: '', message: '', type: 'info' })
+
+  const showToast = (title, message, type = 'info') => {
+    setToast({ show: true, title, message, type })
+    setTimeout(() => setToast(prev => ({ ...prev, show: false })), 4000)
+  }
+
+
   useEffect(() => {
     const apiBase = import.meta.env.VITE_API_URL || '/api'
     fetch(`${apiBase}/auth/status`)
@@ -112,27 +124,37 @@ export default function SettingsPage() {
           a.click()
           document.body.removeChild(a)
           URL.revokeObjectURL(url)
-        }).catch(err => alert('ไม่สามารถดึงข้อมูลได้: ' + err.message))
+          showToast('ส่งออกสำเร็จ', 'สำรองข้อมูลพรีเมียมเรียบร้อยแล้ว', 'success')
+        }).catch(err => showToast('เกิดข้อผิดพลาด', err.message, 'error'))
       })
     } else if (item.label === 'ออกจากระบบ') {
-      alert('ออกจากระบบสำเร็จ! (เนื่องจากเป็นแอประบบเดี่ยว จึงใช้งานต่อได้ปกติ)')
-      navigate('/')
+      showToast('ออกจากระบบ', 'ออกจากระบบสำเร็จ! (ใช้งานต่อได้ปกติ)', 'info')
+      setTimeout(() => navigate('/'), 1000)
     } else if (item.label === 'Google Fit') {
       if (isGoogleConnected) {
-        if (window.confirm('ยกเลิกการเชื่อมต่อกับ Google Fit? (คุณจะลิงก์ข้อมูลวิ่งไม่ได้อีก)')) {
-          const apiBase = import.meta.env.VITE_API_URL || '/api'
-          fetch(`${apiBase}/auth/disconnect`, { method: 'POST' })
-            .then(() => setIsGoogleConnected(false))
-        }
+        setShowConfirm(true)
       } else {
         // In production, we need the full URL for the redirect
         const backendUrl = import.meta.env.VITE_API_URL || window.location.origin.replace('5173', '5000').replace('5174', '5000')
         window.location.href = `${backendUrl}/auth/google`
       }
     } else if (item.label === 'ภาษา' || item.label === 'รีเซ็ตสถิติต่อเนื่อง' || item.label === 'ให้คะแนนแอป') {
-      alert('ฟีเจอร์นี้เตรียมอัปเดตในเวอร์ชันหน้านะครับ! 🚀')
+      showToast('Coming Soon', 'ฟีเจอร์นี้เตรียมอัปเดตในเวอร์ชันหน้านะครับ! 🚀', 'info')
     }
   }
+
+
+  const handleConfirmDisconnect = () => {
+    setShowConfirm(false)
+    const apiBase = import.meta.env.VITE_API_URL || '/api'
+    fetch(`${apiBase}/auth/disconnect`, { method: 'POST' })
+      .then(() => {
+        setIsGoogleConnected(false)
+        showToast('ยกเลิกแล้ว', 'ยกเลิกการเชื่อมต่อ Google Fit เรียบร้อย', 'info')
+      })
+      .catch(() => showToast('ข้อผิดพลาด', 'ไม่สามารถยกเลิกได้ กรุณาลองใหม่', 'error'))
+  }
+
 
   return (
     <div className="bg-surface text-on-surface min-h-screen pb-32">
@@ -227,6 +249,25 @@ export default function SettingsPage() {
       </main>
 
       <BottomNavBar />
+
+      <ConfirmModal
+        show={showConfirm}
+        title="ยกเลิกการเชื่อมต่อ?"
+        message="คุณแน่ใจหรือไม่ว่าต้องการยกเลิกการเชื่อมต่อกับ Google Fit? คุณจะไม่สามารถซิงค์ข้อมูลวิ่งเข้าแอปได้"
+        confirmText="ยืนยัน ยกเลิก"
+        cancelText="คงไว้"
+        type="danger"
+        onConfirm={handleConfirmDisconnect}
+        onCancel={() => setShowConfirm(false)}
+      />
+
+      <Toast
+        show={toast.show}
+        title={toast.title}
+        message={toast.message}
+        type={toast.type}
+        onClose={() => setToast({ ...toast, show: false })}
+      />
     </div>
   )
 }
