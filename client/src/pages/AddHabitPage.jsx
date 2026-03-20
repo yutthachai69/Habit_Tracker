@@ -33,7 +33,8 @@ export default function AddHabitPage() {
   const [syncType, setSyncType] = useState('steps')
 
   useEffect(() => {
-    fetch('/api/auth/status')
+    const apiBase = import.meta.env.VITE_API_URL || '/api'
+    fetch(`${apiBase}/auth/status`)
       .then(res => res.json())
       .then(data => setIsGoogleConnected(data.connected))
       .catch(err => console.error(err))

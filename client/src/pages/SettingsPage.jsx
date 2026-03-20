@@ -90,7 +90,8 @@ export default function SettingsPage() {
   const [isGoogleConnected, setIsGoogleConnected] = useState(false)
 
   useEffect(() => {
-    fetch('/api/auth/status')
+    const apiBase = import.meta.env.VITE_API_URL || '/api'
+    fetch(`${apiBase}/auth/status`)
       .then(res => res.json())
       .then(data => setIsGoogleConnected(data.connected))
       .catch(err => console.error('Failed to get auth status:', err))
@@ -119,7 +120,8 @@ export default function SettingsPage() {
     } else if (item.label === 'Google Fit') {
       if (isGoogleConnected) {
         if (window.confirm('ยกเลิกการเชื่อมต่อกับ Google Fit? (คุณจะลิงก์ข้อมูลวิ่งไม่ได้อีก)')) {
-          fetch('/api/auth/disconnect', { method: 'POST' })
+          const apiBase = import.meta.env.VITE_API_URL || '/api'
+          fetch(`${apiBase}/auth/disconnect`, { method: 'POST' })
             .then(() => setIsGoogleConnected(false))
         }
       } else {

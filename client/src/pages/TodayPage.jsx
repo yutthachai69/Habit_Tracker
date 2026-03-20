@@ -33,7 +33,8 @@ export default function TodayPage() {
   
   const fetchXP = async () => {
     try {
-      const res = await fetch('/api/logs/xp')
+      const apiBase = import.meta.env.VITE_API_URL || '/api'
+      const res = await fetch(`${apiBase}/logs/xp`)
       const data = await res.json()
       
       // Check for level up
@@ -77,7 +78,8 @@ export default function TodayPage() {
   const handleSyncData = async (habit) => {
     setSyncingHabitId(habit._id)
     try {
-      const res = await fetch(`/api/fit/sync?date=${todayStr}`)
+      const apiBase = import.meta.env.VITE_API_URL || '/api'
+      const res = await fetch(`${apiBase}/fit/sync?date=${todayStr}`)
       if (!res.ok) throw new Error('เกิดข้อผิดพลาดในการซิงค์ข้อมูล')
       const data = await res.json()
       
