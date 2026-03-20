@@ -72,7 +72,8 @@ router.get('/sync', async (req, res) => {
     res.json({ steps, distance: Math.round(distance) })
   } catch (error) {
     console.error('Error fetching Google Fit data:', error.message)
-    res.status(500).json({ error: error.message || 'Failed to sync with Google Fit' })
+    const status = error.message === 'Not connected to Google Fit' ? 401 : 500
+    res.status(status).json({ error: error.message || 'Failed to sync with Google Fit' })
   }
 })
 
