@@ -1,0 +1,17 @@
+{
+  "name": "Stitch Habit Tracker",
+  "short_name": "Stitch",
+  "description": "Premium Habit Tracking with Google Fit Sync",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#edffef",
+  "theme_color": "#006a2b",
+  "icons": [
+    {
+      "src": "/icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ]
+}
